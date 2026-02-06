@@ -1,0 +1,10 @@
+path: C:\Users\ASUS!\Desktop\seg_train\
+
+
+train: train
+val: valid
+
+names:
+  0: crop
+  1: weed
+
