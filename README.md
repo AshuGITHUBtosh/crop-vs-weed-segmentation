@@ -27,7 +27,7 @@ pip install python-dotenv
 
 ---
 
-# Initializing the Code
+## Initializing the Code
 ``` python test.py ```
 
 ### The output will be stored in the "output" folder 
