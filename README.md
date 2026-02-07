@@ -24,3 +24,5 @@ pip install python-dotenv
 
 # Running the code
 ``` python test.py ```
+
+### The output will be stored in the "output" folder 
