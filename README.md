@@ -1,6 +1,6 @@
 # Crop–Weed Instance Segmentation for Laser Weeding
 ---
-### This repository implements a hybrid perception pipeline for instance-level weed segmentation suitable for plant-level laser actuation in agricultural environments.
+This repository implements a hybrid perception pipeline for instance-level weed segmentation suitable for plant-level laser actuation in agricultural environments.
 The system is designed to safely separate crops from weeds and output individual weed instances, each with its own mask and centroid, enabling precise and targeted laser-based weed removal.
 
 ---
