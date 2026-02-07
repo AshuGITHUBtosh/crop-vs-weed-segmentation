@@ -14,7 +14,7 @@ pip install python-dotenv
 
  ```
 # Setting Paths
-### in the .env file there are 3 paths
+### In the .env file there are 3 paths
 - Path of the trained model (best.pt)
 - path of the input image
 - path of the output folder
@@ -22,7 +22,7 @@ pip install python-dotenv
 
 ---
 
-# Running the code
+# Initializing the Code
 ``` python test.py ```
 
 ### The output will be stored in the "output" folder 
