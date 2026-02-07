@@ -6,7 +6,7 @@
 
 ---
 
-## Install dependencies
+# Install dependencies
 
 ```
 pip install ultralytics
