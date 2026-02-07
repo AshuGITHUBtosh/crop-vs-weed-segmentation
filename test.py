@@ -4,6 +4,7 @@ from ultralytics import YOLO
 import os
 from dotenv import load_dotenv
 
+
 # =====================================================
 # LOAD ENVIRONMENT VARIABLES
 # =====================================================
@@ -14,9 +15,12 @@ IMAGE_PATH = os.getenv("IMAGE_PATH")
 BASE_OUTPUT_DIR = os.getenv("OUTPUT_DIR", "outputs")
 
 if MODEL_PATH is None or IMAGE_PATH is None:
-    raise ValueError("❌ MODEL_PATH or IMAGE_PATH not set in .env file")
+    raise ValueError("MODEL_PATH or IMAGE_PATH not set in .env file")
 
-# Output folders
+
+# =====================================================
+# OUTPUT DIRECTORIES
+# =====================================================
 CROP_DIR = os.path.join(BASE_OUTPUT_DIR, "crop_mask")
 WEED_DIR = os.path.join(BASE_OUTPUT_DIR, "weed_instances_vis")
 HIGHLIGHT_DIR = os.path.join(BASE_OUTPUT_DIR, "highlighted")
@@ -24,6 +28,13 @@ HIGHLIGHT_DIR = os.path.join(BASE_OUTPUT_DIR, "highlighted")
 os.makedirs(CROP_DIR, exist_ok=True)
 os.makedirs(WEED_DIR, exist_ok=True)
 os.makedirs(HIGHLIGHT_DIR, exist_ok=True)
+
+
+# =====================================================
+# IMAGE NAME (FOR SAVING RESULTS)
+# =====================================================
+image_name = os.path.splitext(os.path.basename(IMAGE_PATH))[0]
+
 
 # =====================================================
 # LOAD MODEL & IMAGE
@@ -37,6 +48,7 @@ if img is None:
 orig = img.copy()
 h, w = img.shape[:2]
 
+
 # =====================================================
 # YOLO → CROP MASK
 # =====================================================
@@ -46,17 +58,19 @@ crop_mask = np.zeros((h, w), dtype=np.uint8)
 
 if results.masks is not None:
     for i, cls in enumerate(results.boxes.cls):
-        if int(cls) == 0:  # crop
+        if int(cls) == 0:  # crop class
             mask = results.masks.data[i].cpu().numpy()
             mask = cv2.resize(mask, (w, h))
             crop_mask = np.maximum(crop_mask, mask)
 
 crop_mask = (crop_mask * 255).astype(np.uint8)
 
+
 # =====================================================
 # REMOVE CROP REGION
 # =====================================================
 no_crop = cv2.bitwise_and(img, img, mask=cv2.bitwise_not(crop_mask))
+
 
 # =====================================================
 # WEED PIXEL DETECTION (HSV + ExG)
@@ -74,12 +88,13 @@ _, exg_mask = cv2.threshold(exg, 25, 255, cv2.THRESH_BINARY)
 
 weed_mask = cv2.bitwise_or(hsv_mask, exg_mask)
 
-# Remove soil-like low saturation
+# Remove soil-like low saturation pixels
 _, s, _ = cv2.split(hsv)
 weed_mask[s < 40] = 0
 
+
 # =====================================================
-# INSTANCE SEPARATION (UNCHANGED)
+# INSTANCE SEPARATION
 # =====================================================
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 weed_mask = cv2.morphologyEx(weed_mask, cv2.MORPH_OPEN, kernel)
@@ -132,6 +147,7 @@ for label_id in range(1, num_labels):
         1
     )
 
+
 # =====================================================
 # HIGHLIGHT IMAGE
 # =====================================================
@@ -143,18 +159,31 @@ for w_inst in weed_instances:
 
 highlight = cv2.addWeighted(orig, 0.4, highlight, 0.6, 0)
 
+
 # =====================================================
-# SAVE OUTPUTS
+# SAVE OUTPUTS (IMAGE-NAME BASED)
 # =====================================================
-cv2.imwrite(os.path.join(CROP_DIR, "crop_mask.png"), crop_mask)
-cv2.imwrite(os.path.join(WEED_DIR, "weed_instances.png"), final_vis)
-cv2.imwrite(os.path.join(HIGHLIGHT_DIR, "highlighted_crops_weeds.png"), highlight)
+cv2.imwrite(
+    os.path.join(CROP_DIR, f"{image_name}_crop_mask.png"),
+    crop_mask
+)
+
+cv2.imwrite(
+    os.path.join(WEED_DIR, f"{image_name}_weed_instances.png"),
+    final_vis
+)
+
+cv2.imwrite(
+    os.path.join(HIGHLIGHT_DIR, f"{image_name}_highlighted.png"),
+    highlight
+)
 
 print("✅ Outputs saved successfully")
 print(f"Total weed instances detected: {len(weed_instances)}")
 
+
 # =====================================================
-# DISPLAY (OPTIONAL)
+# DISPLAY
 # =====================================================
 cv2.imshow("Crop Mask", crop_mask)
 cv2.imshow("Weed Instance Segmentation (Laser Ready)", final_vis)
