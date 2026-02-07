@@ -1,6 +1,3 @@
-# Setting up Velodyne VLP-16 LiDAR and Pixhawk (MAVROS) with ROS 2 Humble
-
----
 
 ## System Requirements
 
